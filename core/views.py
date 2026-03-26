@@ -15,7 +15,27 @@ from .serializers import (
 )
 from .services import confirm_order, deliver_order
 
+from rest_framework.permissions import IsAuthenticated
 from .permissions import IsAdminUserCustom, IsDealerUser
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .serializers import DealerRegisterSerializer
+
+class DealerRegisterView(APIView):
+
+    def post(self, request):
+        serializer = DealerRegisterSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "Dealer registered successfully"},
+                status=status.HTTP_201_CREATED
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
   
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
@@ -49,8 +69,8 @@ class OrderViewSet(viewsets.ModelViewSet):
     
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context.update({"request": self.request})
-        return context 
+        context['request'] = self.request
+        return context
     
     
     @action(detail=True, methods=['post'])
@@ -89,4 +109,21 @@ class OrderViewSet(viewsets.ModelViewSet):
         order.delete()
         return Response({"message": "Order deleted successfully"})
     
-    
+    class OrderViewSet(viewsets.ModelViewSet):
+        queryset = Order.objects.all()
+        serializer_class = OrderSerializer
+
+    def get_permissions(self):
+        # Default → user must be logged in
+        permissions = [IsAuthenticated()]
+
+        if self.action == 'create':
+            permissions.append(IsDealerUser())
+
+        elif self.action == 'confirm':
+            permissions.append(IsDealerUser())
+
+        elif self.action == 'deliver':
+            permissions.append(IsAdminUserCustom())  # 🔥 ONLY ADMIN
+
+        return permissions
