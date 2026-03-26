@@ -8,3 +8,15 @@ class IsAdminUserCustom(BasePermission):
 class IsDealerUser(BasePermission):
     def has_permission(self, request, view):
         return hasattr(request.user, 'dealer')
+    
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsDealerUser()]
+
+        elif self.action == 'confirm':
+            return [IsDealerUser()]   # ✅ Dealer confirms
+
+        elif self.action == 'deliver':
+            return [IsAdminUserCustom()]  # ✅ Admin delivers
+
+        return super().get_permissions()

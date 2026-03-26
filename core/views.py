@@ -57,12 +57,10 @@ class OrderViewSet(viewsets.ModelViewSet):
     def confirm(self, request, pk=None):
         order = self.get_object()
 
-        try:
-            confirm_order(order)
-            return Response({"message": "Order confirmed"})
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-            
+        confirm_order(order, request.user)
+
+        return Response({"message": "Order confirmed"})
+                
         
     @action(detail=True, methods=['post'])
     def deliver(self, request, pk=None):

@@ -3,10 +3,13 @@ from .models import Inventory
 from rest_framework.exceptions import ValidationError
 
 @transaction.atomic
-def confirm_order(order):
+def confirm_order(order, user):
+
+    if order.dealer.user != user:
+        raise ValidationError("You can only confirm your own orders")
 
     if order.status != 'DRAFT':
-        raise ValidationError("Order must be in DRAFT to confirm")
+        raise ValidationError("Order must be in DRAFT")
 
     insufficient_products = []
 
