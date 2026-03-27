@@ -3,7 +3,8 @@ from .views import ProductViewSet, DealerViewSet, OrderViewSet, InventoryViewSet
 
 from django.urls import path
 from .views import DealerRegisterView
- 
+
+
 
 router = DefaultRouter()
 router.register('products', ProductViewSet)
@@ -16,5 +17,6 @@ urlpatterns = router.urls
 # ✅ Add this separately (IMPORTANT)
 urlpatterns += [
     path('register/', DealerRegisterView.as_view()),
+    
 ]
 

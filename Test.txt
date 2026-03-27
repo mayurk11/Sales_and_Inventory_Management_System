@@ -1,0 +1,152 @@
+SALES ORDER & INVENTORY SYSTEM - TEST CASES
+
+BASE URL:
+http://127.0.0.1:8000/api/
+
+Use Header:
+Authorization: Bearer <TOKEN>
+
+
+==============================
+1. ROLE BASED ACCESS
+==============================
+
+TC-1: No Token Access
+GET /api/products/
+Expected: 401 Unauthorized
+
+TC-2: Dealer tries Admin API
+POST /api/products/
+Expected: 403 Forbidden
+
+
+==============================
+2. ADMIN FLOW
+==============================
+
+TC-A1: Admin Login
+POST /api/token/
+{
+  "username": "admin",
+  "password": "adminpassword"
+}
+Expected: Access token received
+
+TC-A2: Add Product
+POST /api/products/
+{
+  "name": "Laptop",
+  "sku": "LAP123",
+  "price": 50000
+}
+
+TC-A3: Add Another Product
+{
+  "name": "Mouse",
+  "sku": "MOU456",
+  "price": 500
+}
+
+TC-A4: Add Inventory
+POST /api/inventory/
+{
+  "product": 1,
+  "quantity": 10
+}
+
+TC-A5: Add Inventory (2nd Product)
+{
+  "product": 2,
+  "quantity": 50
+}
+
+TC-A6: View Dealers
+GET /api/dealers/
+
+TC-A7: View Orders
+GET /api/orders/
+
+
+==============================
+3. DEALER FLOW
+==============================
+
+TC-D1: Dealer Registration
+POST /api/register/
+{
+  "username": "dealer1",
+  "password": "pass123",
+  "name": "ABC Traders",
+  "email": "abc@gmail.com",
+  "phone": "9999999999"
+}
+
+TC-D2: Dealer Login
+POST /api/token/
+{
+  "username": "dealer1",
+  "password": "pass123"
+}
+
+TC-D3: Create Order (Multiple Products)
+POST /api/orders/
+{
+  "items": [
+    { "product": 1, "quantity": 2 },
+    { "product": 2, "quantity": 5 }
+  ]
+}
+
+Expected: status = DRAFT
+
+TC-D4: Confirm Order
+POST /api/orders/1/confirm/
+Expected: Order confirmed, stock deducted
+
+TC-D5: Insufficient Stock
+POST /api/orders/
+{
+  "items": [
+    { "product": 1, "quantity": 999 }
+  ]
+}
+Then confirm
+Expected: Insufficient stock error
+
+TC-D6: Confirm Again
+POST /api/orders/1/confirm/
+Expected: Error (not DRAFT)
+
+TC-D7: Dealer cannot deliver
+POST /api/orders/1/deliver/
+Expected: 403 Forbidden
+
+
+==============================
+4. ADMIN DELIVERY FLOW
+==============================
+
+TC-A8: Deliver Order
+POST /api/orders/1/deliver/
+Expected: Order delivered
+
+TC-A9: Deliver Again
+POST /api/orders/1/deliver/
+Expected: Error
+
+
+==============================
+5. FINAL CHECK
+==============================
+
+TC-F1: Check Inventory After Confirm
+GET /api/inventory/
+Expected: Stock reduced
+
+TC-F2: Delete Order
+DELETE /api/orders/1/
+Expected: Order deleted
+
+TC-F3: Check Inventory After Delete
+GET /api/inventory/
+Expected: Stock restored
